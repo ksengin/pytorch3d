@@ -16,6 +16,7 @@ from PIL import Image
 # from IPython import display
 from tqdm.notebook import tqdm
 import time
+import torch.nn as nn
 import torch.nn.functional as F
 
 # Data structures and functions for rendering
@@ -166,7 +167,8 @@ class NeuralRadianceField(torch.nn.Module):
         self.D = D
         self.W = W
         self.input_ch = embedding_dim
-        self.input_ch_views = input_ch_views
+        input_ch = embedding_dim
+        self.input_ch_views = 3
         self.skips = []
         self.use_viewdirs = False
         output_ch = n_hidden_neurons
@@ -175,8 +177,6 @@ class NeuralRadianceField(torch.nn.Module):
             [DenseLayer(input_ch, W, activation="relu")] + [DenseLayer(W, W, activation="relu") if i not in self.skips else DenseLayer(W + input_ch, W, activation="relu") for i in range(D-1)]
             + [DenseLayer(W, output_ch, activation="linear")])
         
-        ### Implementation according to the official code release (https://github.com/bmild/nerf/blob/master/run_nerf_helpers.py#L104-L105)
-        self.views_linears = nn.ModuleList([DenseLayer(input_ch_views + W, W//2, activation="relu")])
 
                 
     def _get_densities(self, features):
