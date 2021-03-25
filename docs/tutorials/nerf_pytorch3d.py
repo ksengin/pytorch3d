@@ -126,12 +126,24 @@ class NeuralRadianceField(torch.nn.Module):
         # which converts the input per-point harmonic embeddings
         # to a latent representation.
         # Not that we use Softplus activations instead of ReLU.
-        # self.mlp = torch.nn.Sequential(
-        #     torch.nn.Linear(embedding_dim, n_hidden_neurons),
-        #     torch.nn.Softplus(beta=10.0),
-        #     torch.nn.Linear(n_hidden_neurons, n_hidden_neurons),
-        #     torch.nn.Softplus(beta=10.0),
-        # )        
+        self.mlp = torch.nn.Sequential(
+            torch.nn.Linear(embedding_dim, n_hidden_neurons),
+            torch.nn.Softplus(beta=10.0),
+            torch.nn.Linear(n_hidden_neurons, n_hidden_neurons),
+            torch.nn.Softplus(beta=10.0),
+            torch.nn.Linear(n_hidden_neurons, n_hidden_neurons),
+            torch.nn.Softplus(beta=10.0),
+            torch.nn.Linear(n_hidden_neurons, n_hidden_neurons),
+            torch.nn.Softplus(beta=10.0),
+            torch.nn.Linear(n_hidden_neurons, n_hidden_neurons),
+            torch.nn.Softplus(beta=10.0),
+            torch.nn.Linear(n_hidden_neurons, n_hidden_neurons),
+            torch.nn.Softplus(beta=10.0),
+            torch.nn.Linear(n_hidden_neurons, n_hidden_neurons),
+            torch.nn.Softplus(beta=10.0),
+            torch.nn.Linear(n_hidden_neurons, n_hidden_neurons),
+            torch.nn.Softplus(beta=10.0),
+        )        
         
         # Given features predicted by self.mlp, self.color_layer
         # is responsible for predicting a 3-D per-point vector
@@ -173,9 +185,9 @@ class NeuralRadianceField(torch.nn.Module):
         self.use_viewdirs = False
         output_ch = n_hidden_neurons
         
-        self.mlp = nn.ModuleList(
-            [DenseLayer(input_ch, W, activation="relu")] + [DenseLayer(W, W, activation="relu") if i not in self.skips else DenseLayer(W + input_ch, W, activation="relu") for i in range(D-1)]
-            + [DenseLayer(W, output_ch, activation="linear")])
+        # self.mlp = nn.ModuleList(
+        #     [DenseLayer(input_ch, W, activation="relu")] + [DenseLayer(W, W, activation="relu") if i not in self.skips else DenseLayer(W + input_ch, W, activation="relu") for i in range(D-1)]
+        #     + [DenseLayer(W, output_ch, activation="linear")])
         
 
                 
@@ -268,12 +280,12 @@ class NeuralRadianceField(torch.nn.Module):
         # embeds.shape = [minibatch x ... x self.n_harmonic_functions*6]
         
         # self.mlp maps each harmonic embedding to a latent feature space.
-        # features = self.mlp(embeds)
-        features = embeds
-        for ii in range(self.D + 1):
-            features = self.mlp[ii](features)
-            features = F.relu(features)
-            
+        features = self.mlp(embeds)
+        # features = embeds
+        # for ii in range(self.D + 1):
+        #     features = self.mlp[ii](features)
+        #     features = F.relu(features)
+
         # features.shape = [minibatch x ... x n_hidden_neurons]
         
         # Finally, given the per-point features, 
